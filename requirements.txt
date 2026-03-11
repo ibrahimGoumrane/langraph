@@ -1,0 +1,8 @@
+langchain
+langchain-openai
+python-dotenv
+ipython
+jupyter
+rfc3987
+Pillow
+langraph-cli-inmem
