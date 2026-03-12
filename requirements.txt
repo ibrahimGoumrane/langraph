@@ -6,3 +6,6 @@ jupyter
 rfc3987
 Pillow
 langgraph-cli
+redis
+langgraph-checkpoint-redis
+redis

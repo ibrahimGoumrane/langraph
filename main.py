@@ -1,43 +1,57 @@
-# Build workflow
-from langgraph.graph import END, START, MessagesState, StateGraph
-from agent import LangGraphLogger, llm_call, tool_node, should_continue
-from PIL import Image as PILImage
 import io
+
 from langchain.messages import HumanMessage
+from langgraph.graph import END, START, MessagesState, StateGraph
+from PIL import Image as PILImage
+
+from agent import clear_cache, llm_call, memory, should_continue, tool_node
 
 
-agent_builder = StateGraph(MessagesState)
+def build_agent():
+    agent_builder = StateGraph(MessagesState)
 
-# Add nodes
-agent_builder.add_node("llm_call", llm_call)
-agent_builder.add_node("tool_node", tool_node)
+    agent_builder.add_node("llm_call", llm_call)
+    agent_builder.add_node("tool_node", tool_node)
 
-# Add edges to connect nodes
-agent_builder.add_edge(START, "llm_call")
-agent_builder.add_conditional_edges(
-    "llm_call",
-    should_continue,
-    ["tool_node", END]
-)
-agent_builder.add_edge("tool_node", "llm_call")
+    agent_builder.add_edge(START, "llm_call")
+    agent_builder.add_conditional_edges(
+        "llm_call",
+        should_continue,
+        ["tool_node", END],
+    )
+    agent_builder.add_edge("tool_node", "llm_call")
 
-# Compile the agent
-agent = agent_builder.compile()
+    return agent_builder.compile(checkpointer=memory)
 
-graph_bytes = agent.get_graph(xray=True ).draw_mermaid_png()
+def render_graph(agent):
+    graph_bytes = agent.get_graph(xray=True).draw_mermaid_png()
 
-with open("graph.png", "wb") as f:
-    f.write(graph_bytes)
-print("Graph saved as graph.png")
+    with open("graph.png", "wb") as file_obj:
+        file_obj.write(graph_bytes)
 
-image = PILImage.open(io.BytesIO(graph_bytes))
-image.show()
+    print("Graph saved as graph.png")
 
-# Invoke
+    image = PILImage.open(io.BytesIO(graph_bytes))
+    image.show()
 
-messages = [HumanMessage(content="Add 3 and 4.")]
-logger = LangGraphLogger()
-final_state = logger.invoke_with_logs(agent, {"messages": messages})
+def main(messages :  list[str] ,thread_id: str):
+    agent = build_agent()
+    render_graph(agent)
 
-for m in final_state["messages"]:
-    m.pretty_print()
+    for message in messages:
+        config = {"configurable": {"thread_id": thread_id}}
+        state = agent.invoke(MessagesState(messages=[HumanMessage(content=message)]), config=config)
+        state["messages"][-1].pretty_print() 
+
+if __name__ == "__main__":
+    # main([
+    #     "Calculate the sum of 5 and 7" , 
+    #       "What is the capital of France?" , 
+    #       "Add an actual 2 to the actual previous result",
+    #       "Then subdivise the last result by 3"
+    #     ] , "thread-1")
+    # clear_cache()  # Clear cache before running
+    main([
+        "Yes do that"
+    ] , "thread-1")
+

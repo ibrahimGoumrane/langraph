@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from datetime import datetime
+from pathlib import Path
 from typing import Any
 
 
@@ -11,9 +13,18 @@ class LangGraphLogger:
     enabled: bool = True
     preview_chars: int = 140
 
+    def __post_init__(self) -> None:
+        self.logs_dir = Path(__file__).resolve().parent.parent / "logs"
+        self.logs_dir.mkdir(parents=True, exist_ok=True)
+        timestamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        self.log_file = self.logs_dir / f"langgraph-{timestamp}.log"
+        self.log_file.write_text("[LangGraph Logger Started]\n", encoding="utf-8")
+
     def _print(self, message: str) -> None:
         if self.enabled:
             print(message)
+            with self.log_file.open("a", encoding="utf-8") as file_obj:
+                file_obj.write(f"{message}\n")
 
     def _shorten(self, value: Any) -> str:
         text = str(value).replace("\n", " ").strip()

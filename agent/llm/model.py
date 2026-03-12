@@ -3,12 +3,9 @@ from langchain.chat_models import init_chat_model
 from ..tool.calcul import tools
 load_dotenv()
 
-
 tmp = init_chat_model(
-    "o4-mini",
+    "gpt-5-nano",
     model_provider="openai",
 )
-
-
 
 model = tmp.bind_tools(tools)
