@@ -1,7 +1,6 @@
 # LangGraph Beginner Roadmap (No-Code Build Guide)
 
 This README is your learning plan for what to build next.
-
 You already have a working base agent loop. The next project should help you learn the most important LangGraph concepts without getting overwhelmed.
 
 ## Project to Build

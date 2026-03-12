@@ -1,5 +1,6 @@
 langchain
 langchain-openai
+langchain-huggingface
 python-dotenv
 ipython
 jupyter
@@ -9,3 +10,5 @@ langgraph-cli
 redis
 langgraph-checkpoint-redis
 redis
+sentence-transformers
+chromadb

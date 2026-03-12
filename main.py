@@ -4,7 +4,14 @@ from langchain.messages import HumanMessage
 from langgraph.graph import END, START, MessagesState, StateGraph
 from PIL import Image as PILImage
 
-from agent import clear_cache, llm_call, memory, should_continue, tool_node
+from agent import (
+    clear_cache,
+    llm_call,
+    memory,
+    store_conversation_turn,
+    should_continue,
+    tool_node,
+)
 
 
 def build_agent():
@@ -36,12 +43,20 @@ def render_graph(agent):
 
 def main(messages :  list[str] ,thread_id: str):
     agent = build_agent()
-    render_graph(agent)
+    # render_graph(agent)
 
     for message in messages:
         config = {"configurable": {"thread_id": thread_id}}
         state = agent.invoke(MessagesState(messages=[HumanMessage(content=message)]), config=config)
-        state["messages"][-1].pretty_print() 
+
+        assistant_reply = str(state["messages"][-1].content)
+        store_conversation_turn(
+            thread_id=thread_id,
+            user_input=message,
+            assistant_output=assistant_reply,
+        )
+
+        state["messages"][-1].pretty_print()
 
 if __name__ == "__main__":
     # main([
@@ -52,6 +67,6 @@ if __name__ == "__main__":
     #     ] , "thread-1")
     # clear_cache()  # Clear cache before running
     main([
-        "Yes do that"
+        "What the country i asked u before about its capital?" ,
     ] , "thread-1")
 
