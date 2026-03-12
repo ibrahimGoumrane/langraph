@@ -5,4 +5,4 @@ ipython
 jupyter
 rfc3987
 Pillow
-langraph-cli-inmem
+langgraph-cli
