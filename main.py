@@ -1,30 +1,11 @@
 from langchain.messages import HumanMessage
-from langgraph.graph import END, START, MessagesState, StateGraph
-
 from agent import (
-    llm_call,
-    memory,
     store_conversation_turn,
-    should_continue,
-    tool_node,
+    build_agent,
+    ensure_store_ready,
 )
 
 
-def build_agent():
-    agent_builder = StateGraph(MessagesState)
-
-    agent_builder.add_node("llm_call", llm_call)
-    agent_builder.add_node("tool_node", tool_node)
-
-    agent_builder.add_edge(START, "llm_call")
-    agent_builder.add_conditional_edges(
-        "llm_call",
-        should_continue,
-        ["tool_node", END],
-    )
-    agent_builder.add_edge("tool_node", "llm_call")
-
-    return agent_builder.compile(checkpointer=memory)
 
 
 def make_thread_id(user_name: str) -> str:
@@ -69,6 +50,7 @@ def stream_agent_reply(agent, user_input: str, config: dict) -> dict:
 
 def run_cli() -> None:
     agent = build_agent()
+    ensure_store_ready()
 
     current_user = input("Enter your user name: ").strip() or "guest"
     current_thread = make_thread_id(current_user)

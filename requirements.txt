@@ -2,13 +2,12 @@ langchain
 langchain-openai
 langchain-huggingface
 python-dotenv
-ipython
-jupyter
 rfc3987
 Pillow
 langgraph-cli
 redis
 langgraph-checkpoint-redis
+langgraph-checkpoint-sqlite
 redis
 sentence-transformers
 chromadb
