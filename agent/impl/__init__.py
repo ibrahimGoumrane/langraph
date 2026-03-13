@@ -2,7 +2,7 @@ from .tool.calcul import tools as calcul_tools , tools_by_name as calcul_tool_by
 from .tool.context import tools as context_tools, tools_by_name as context_tools_by_name
 from .llm.model import model
 from .node.llm import llm_call
-from .node.tool import semantic_tool_node, tool_node
+from .node.tool import approval_node, semantic_tool_node, tool_node
 from .state.messages import MessagesState
 from .utils import should_continue 
 from .logger import LangGraphLogger
@@ -21,6 +21,7 @@ __all__ = [
 	"context_tools_by_name",
 	"model",
 	"tool_node",
+	"approval_node",
 	"semantic_tool_node",
 	"llm_call",
 	"MessagesState",

@@ -8,14 +8,14 @@ from dotenv import load_dotenv
 import os 
 
 load_dotenv()
-
+RISKY_TOOLS = {name.strip() for name in os.getenv("RISKY_TOOLS", "divide").split(",") if name.strip()}
 
 MAX_TOOL_CALLS = int(os.getenv("MAX_TOOL_CALLS", 5))
 
-def should_continue(state: MessagesState) -> Literal["tool_node", "semantic_tool_node", END]:
+def should_continue(state: MessagesState) -> Literal["approval_node", "tool_node", "semantic_tool_node", END]:
     """Route tool calls to arithmetic or semantic tool nodes, otherwise end."""
 
-    if state.get("tool_calls" , 0) >= MAX_TOOL_CALLS:
+    if state.get("node_calls", 0) >= MAX_TOOL_CALLS:
         return END
 
     messages = state["messages"]
@@ -28,6 +28,11 @@ def should_continue(state: MessagesState) -> Literal["tool_node", "semantic_tool
     arithmetic_names = set(calcul_tools_by_name.keys())
     semantic_names = set(context_tools_by_name.keys())
 
+    # Check if risky tool
+    risky_tool = any(name in RISKY_TOOLS for name in tool_names)
+    if risky_tool:
+        return "approval_node"
+
     # If every tool call is arithmetic, route to cached arithmetic node.
     if tool_names and all(name in arithmetic_names for name in tool_names):
         return "tool_node"
@@ -38,3 +43,11 @@ def should_continue(state: MessagesState) -> Literal["tool_node", "semantic_tool
 
     # Default to arithmetic node to surface unsupported tools consistently.
     return "tool_node"
+
+
+def after_approval(state: MessagesState) -> Literal["tool_node", "llm_call"]:
+    """Resume tool execution on approval, otherwise return to the model."""
+
+    if state.get("approval_decision") == "approved":
+        return "tool_node"
+    return "llm_call"

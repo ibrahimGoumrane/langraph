@@ -1,9 +1,8 @@
 from langchain.messages import HumanMessage
-from agent import (
-    store_conversation_turn,
-    build_agent,
-    ensure_store_ready,
-)
+from langgraph.types import Command
+
+from agent.impl import build_agent, ensure_store_ready, store_conversation_turn
+
 
 def make_thread_id(user_name: str) -> str:
     normalized = "_".join(user_name.strip().lower().split())
@@ -18,26 +17,71 @@ def print_help() -> None:
     print("  /exit              Quit CLI")
 
 
-def stream_agent_reply(agent, user_input: str, config: dict) -> dict:
+def _stream_once(agent, payload, config: dict, *, show_prefix: bool) -> dict | None:
     final_state: dict | None = None
 
-    print("Assistant> ", end="", flush=True)
-    for mode, payload in agent.stream(
-        {"messages": [HumanMessage(content=user_input)]},
+    if show_prefix:
+        print("Assistant> ", end="", flush=True)
+
+    for mode, event_payload in agent.stream(
+        payload,
         config=config,
         stream_mode=["messages", "values"],
     ):
         if mode == "messages":
-            message, metadata = payload
+            message, metadata = event_payload
             if metadata.get("langgraph_node") != "llm_call":
                 continue
             chunk_text = getattr(message, "content", "")
             if isinstance(chunk_text, str) and chunk_text:
                 print(chunk_text, end="", flush=True)
-        elif mode == "values" and isinstance(payload, dict):
-            final_state = payload
+        elif mode == "values" and isinstance(event_payload, dict):
+            final_state = event_payload
 
     print()
+    return final_state
+
+
+def _get_interrupts(agent, config: dict):
+    snapshot = agent.get_state(config)
+    return tuple(getattr(snapshot, "interrupts", ()) or ())
+
+
+def _get_pending_tool_calls(agent, config: dict) -> list[dict]:
+    snapshot = agent.get_state(config)
+    values = getattr(snapshot, "values", {}) or {}
+    messages = values.get("messages", [])
+    if not messages:
+        return []
+    return list(getattr(messages[-1], "tool_calls", []) or [])
+
+
+def stream_agent_reply(agent, user_input: str, config: dict) -> dict:
+    final_state = _stream_once(
+        agent,
+        {"messages": [HumanMessage(content=user_input)]},
+        config,
+        show_prefix=True,
+    )
+
+    interrupts = _get_interrupts(agent, config)
+    while interrupts:
+        print("\nRISKY TOOL DETECTED - Human approval required.")
+        pending_tool_calls = _get_pending_tool_calls(agent, config)
+        if pending_tool_calls:
+            print("Pending tool calls:", pending_tool_calls)
+
+        approve = input("Approve and continue? (y/n): ").strip().lower() == "y"
+        print("Resuming...")
+        resumed_state = _stream_once(
+            agent,
+            Command(resume=approve),
+            config,
+            show_prefix=True,
+        )
+        if resumed_state is not None:
+            final_state = resumed_state
+        interrupts = _get_interrupts(agent, config)
 
     if final_state is None:
         raise RuntimeError("Graph stream did not return a final state.")

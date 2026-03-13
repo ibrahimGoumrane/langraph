@@ -15,24 +15,23 @@ Completed:
 - [x] Retrieval tool is exposed as `retrieve_from_vector_store(query, thread_id, k)`.
 - [x] CLI streaming is enabled via `agent.stream(..., stream_mode=["messages", "values"])`.
 - [x] Retry policy is configured on tool nodes.
+- [x] Human-in-the-loop approval is implemented for risky tools (`divide`) using interrupt/resume.
+- [x] Loop safety is implemented via max node-call guard (`MAX_TOOL_CALLS`).
 
 Partially completed:
 
-- [~] Evaluation script exists (`demo_eval_agent.py`) with tests for arithmetic, memory recall, and thread isolation.
-- [~] Runtime eval execution is currently blocked in this environment by heavy dependency import startup (`torch`/`transformers`) before tests finish.
+- [~] Manual validation exists through CLI scenarios.
 
 Not completed yet:
 
-- [ ] Human approval / interrupt-resume flow before risky actions (for example before `divide`).
-- [ ] Explicit recursion/loop safety limit in runtime config.
-- [ ] Structured observability/logging report for node-level traces beyond CLI streaming.
-- [ ] Regression test automation (repeatable CI-style test run).
+- [ ] Formal automated tests in a dedicated `test/` folder (unit + integration + regression).
+- [ ] Documented test run command and expected baseline outputs.
 
 Recommended next implementation order:
 
-1. Add interrupt/resume gate before `divide`.
-2. Add recursion safety config and one failure-path test.
-3. Stabilize local eval runtime environment, then run `demo_eval_agent.py` and record baseline results.
+1. Create `test/` suite for math tools, retrieval, and approval flow.
+2. Add integration tests for thread isolation and approve/reject branches.
+3. Add one regression script/command for quick verification before commits.
 
 This README is your learning plan for what to build next.
 You already have a working base agent loop. The next project should help you learn the most important LangGraph concepts without getting overwhelmed.
