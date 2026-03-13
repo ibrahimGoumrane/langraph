@@ -4,10 +4,19 @@ from langgraph.graph import END
 from .state.messages import MessagesState
 from .tool.calcul import tools_by_name as calcul_tools_by_name
 from .tool.context import tools_by_name as context_tools_by_name
+from dotenv import load_dotenv
+import os 
 
+load_dotenv()
+
+
+MAX_TOOL_CALLS = int(os.getenv("MAX_TOOL_CALLS", 5))
 
 def should_continue(state: MessagesState) -> Literal["tool_node", "semantic_tool_node", END]:
     """Route tool calls to arithmetic or semantic tool nodes, otherwise end."""
+
+    if state.get("tool_calls" , 0) >= MAX_TOOL_CALLS:
+        return END
 
     messages = state["messages"]
     last_message = messages[-1]

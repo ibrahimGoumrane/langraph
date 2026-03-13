@@ -20,7 +20,7 @@ def tool_node(state: MessagesState):
 
         result.append(ToolMessage(content=str(observation), tool_call_id=tool_call["id"]))
 
-    return {"messages": result}
+    return {"messages": result , "node_calls": state.get("node_calls", 0) + 1}
 
 
 def semantic_tool_node(state: MessagesState, config: RunnableConfig | None = None):
@@ -44,4 +44,4 @@ def semantic_tool_node(state: MessagesState, config: RunnableConfig | None = Non
         print(f"Called semantic tool {tool_name}({tool_args}) -> {observation}")
         result.append(ToolMessage(content=str(observation), tool_call_id=tool_call["id"]))
 
-    return {"messages": result}
+    return {"messages": result, "node_calls": state.get("node_calls", 0) + 1}

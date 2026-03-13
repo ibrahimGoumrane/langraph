@@ -35,5 +35,5 @@ def llm_call(state: dict):
                 + prompt_messages
             )
         ],
-        "llm_calls": state.get('llm_calls', 0) + 1
+        "node_calls": state.get('node_calls', 0) + 1
     }

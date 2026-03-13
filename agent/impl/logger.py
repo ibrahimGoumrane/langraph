@@ -57,8 +57,8 @@ class LangGraphLogger:
         if messages:
             self._print(f"last={self._message_summary(messages[-1])}")
 
-        if "llm_calls" in state:
-            self._print(f"llm_calls={state['llm_calls']}")
+        if "node_calls" in state:
+            self._print(f"node_calls={state['node_calls']}")
 
     def invoke_with_logs(
         self,
