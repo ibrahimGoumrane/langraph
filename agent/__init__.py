@@ -1,7 +1,8 @@
-from .tool.calcul import tools, tools_by_name
+from .tool.calcul import tools as calcul_tools , tools_by_name as calcul_tool_by_name
+from .tool.context import tools as context_tools, tools_by_name as context_tools_by_name
 from .llm.model import model
 from .nodes.llm import llm_call
-from .nodes.tool import tool_node
+from .nodes.tool import semantic_tool_node, tool_node
 from .state.messages import MessagesState
 from .utils import should_continue 
 from .logger import LangGraphLogger
@@ -12,13 +13,15 @@ from .memory.store import (
 	build_retrieval_context,
     ensure_store_ready
 )
-from .cache.main import cache_tool_result, store_tool_result, clear_cache, get_cache_stats
 from .graph.main import build_agent
 __all__ = [
-	"tools",
-	"tools_by_name",
+	"calcul_tools",
+	"calcul_tool_by_name",
+	"context_tools",
+	"context_tools_by_name",
 	"model",
 	"tool_node",
+	"semantic_tool_node",
 	"llm_call",
 	"MessagesState",
 	"should_continue",
@@ -27,10 +30,6 @@ __all__ = [
 	"store",
 	"store_conversation_turn",
 	"build_retrieval_context",
-	"cache_tool_result",
-	"store_tool_result",
-	"clear_cache",
-	"get_cache_stats",
 	"build_agent",
     "ensure_store_ready"
 ]

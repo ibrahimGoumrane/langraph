@@ -5,9 +5,6 @@ from agent import (
     ensure_store_ready,
 )
 
-
-
-
 def make_thread_id(user_name: str) -> str:
     normalized = "_".join(user_name.strip().lower().split())
     return f"user::{normalized or 'guest'}"

@@ -11,6 +11,7 @@ from agent import (
     MessagesState,
     llm_call,
     memory,
+    semantic_tool_node,
     should_continue,
     tool_node,
 )
@@ -26,16 +27,25 @@ def build_agent():
     ), cache_policy=CachePolicy(
         ttl=3600 * 24,
     ))
+    agent_builder.add_node(
+        "semantic_tool_node",
+        semantic_tool_node,
+        retry_policy=RetryPolicy(
+            max_attempts=4,
+            retry_on=(Exception, ValueError),
+        ),
+    )
 
     agent_builder.add_edge(START, "llm_call")
     agent_builder.add_conditional_edges(
         "llm_call",
         should_continue,
-        ["tool_node", END],
+        ["tool_node", "semantic_tool_node", END],
     )
     agent_builder.add_edge("tool_node", "llm_call")
+    agent_builder.add_edge("semantic_tool_node", "llm_call")
 
-    return agent_builder.compile(checkpointer=memory , cache= SqliteCache("nodes_cache.db"))
+    return agent_builder.compile(checkpointer=memory , cache= SqliteCache(path = "nodes_cache.db"))
 
 
 if __name__ == "__main__":

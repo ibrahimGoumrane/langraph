@@ -11,3 +11,4 @@ langgraph-checkpoint-sqlite
 redis
 sentence-transformers
 chromadb
+tiktoken
